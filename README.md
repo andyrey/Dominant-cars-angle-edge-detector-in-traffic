@@ -1,6 +1,7 @@
 # Dominant-cars-angle-edge-detector-in-traffic
 The aim is to find angle between cars' front edge and frame horizont for front view normalization.
-Just launch command line "traffic_angle.exe your_traffic_video.mp4"
+Just launch command line "traffic_angle.exe your_traffic_video.mp4".
+To better understanding look at the picture I supplied.
 
 This program accumulates traffic info and find statistically dominating
 angle of front cars' edges. It can be used for normalizing front view.

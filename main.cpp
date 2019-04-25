@@ -1,4 +1,4 @@
-/*******.******=***.**.***********************************1****
+/**************************************************************
 By Zakharoff Andrey
 This program accumulates traffic info and find statistically dominating
 angle of front cars' edges. It can be used for normalizing front view.
@@ -41,13 +41,15 @@ int main(int argc, char** argv)
 	int valu_prev[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	int valu_diff[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	long int frame_count = 0;
-
+	int draw_line_length = 200;
 	vicapture >> frame1;
 	frame2 = frame1;
+	
 	Size smaller_size;//=frame2.size(); 
 	smaller_size.width = frame1.cols*0.4;
 	smaller_size.height = frame1.rows*0.4;
-
+	cv::Point frame_center_point(smaller_size.width / 2, smaller_size.height / 2);
+	cv::Point P2;
 	const int KEY_SPACE = 32;
 	const int KEY_ESC = 27;
 	int Y_line = 300;
@@ -55,7 +57,7 @@ int main(int argc, char** argv)
 
 	vector<int> vals;
 	vals.reserve(smaller_size.width);
-	int vals_spike[LINESET];//responses measured framely for 7 different angles
+	int vals_spike[LINESET];//responses measured framely for 15 different angles
 
 	do
 	{
@@ -64,15 +66,15 @@ int main(int argc, char** argv)
 			break;
 		resize(frame1, frame1, smaller_size);
 		resize(frame2, frame2, smaller_size);
+		
 		cvtColor(frame1, frame1, CV_BGR2GRAY);
 		if (!frame_count)//bcs frame2=framel (gray) at the end of this loop
 			cvtColor(frame2, frame2, CV_BGR2GRAY);
-		///frame_diff=framel;
+
 		absdiff(frame1, frame2, frame_diff);
-		//int erosion_size=3;
 		threshold(frame_diff, frame_diff, 50, 255,
 			CV_THRESH_BINARY);//CV_THRESH_OTSU+ 
-		//scanLine(frame_diff, vals, Y_line, 0, frame_diff.cols, 30);
+	
 		Mat	frame_diff2 = Mat::zeros(frame_diff.rows, frame_diff.cols, frame_diff.type());
 		//draw lines to see when car intersect it 
 		line(frame2, Point(0, Y_line), Point(frame2.cols, Y_line), Scalar(255, 255, 0), 1);
@@ -111,9 +113,13 @@ int main(int argc, char** argv)
 				angle_mean = alpha[mostActive_id];
 
 			angle_current = alpha[mostActive_id];
-			// angle_mean = ((1.f -ratio_of_active_mode)*angle_mean*frame_count + ratio_of_active_mode*angle_current) / (1.f + frame_count);
-			//angle_mean=(angle_mean*frame_count+angle_current)/(1.f+frame_count); 
 			angle_mean = 0.99*angle_mean + 0.01*angle_current;
+			
+			//let's draw it as a line
+			
+			P2.x = (int)round(frame_center_point.x + draw_line_length * cos(-angle_mean* CV_PI / 180.0));//
+			P2.y = (int)round(frame_center_point.y + draw_line_length * sin(-angle_mean* CV_PI / 180.0));//
+			cv::line(frame2,frame_center_point, P2, cv::Scalar(250, 250, 255), 5);
 			std::cout << std::fixed;
 			std::cout << std::setprecision(2);
 			cout << "\n\n\n" << "in frame " << frame_count << '\n' << "angle mean =" << angle_mean << "\n\n";
